@@ -6,15 +6,16 @@ using Microsoft.IdentityModel.Tokens;
 using CarInventory.CarInventory.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using CarInventory.CarInventory.Dal;
 
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager; 
 
-    public AuthController(UserManager<IdentityUser> userManager)
+    public AuthController(UserManager<ApplicationUser> userManager)
     {
         _userManager = userManager;
     }
@@ -27,7 +28,7 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var user = new IdentityUser { UserName = model.Username, Email = model.Email };
+        var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (result.Succeeded)
@@ -46,7 +47,9 @@ public class AuthController : ControllerBase
 
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
+        {
             return Unauthorized();
+        }
 
         var token = GenerateJwtToken(user);
         return Ok(new { Token = token });

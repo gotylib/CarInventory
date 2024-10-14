@@ -8,13 +8,29 @@ namespace CarInventory.CarInventory.Dal
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+            Database.EnsureCreated();
         }
 
         public DbSet<Car> Cars { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Domains;Username=postgres;Password=1234");
+            base.OnModelCreating(builder);
+
+            // Создание таблицы Cars (Пример)
+            builder.Entity<Car>(entity =>
+            {
+                entity.ToTable("Cars");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Make).IsRequired();
+                entity.Property(e => e.Model).IsRequired();
+                entity.Property(e => e.Color).IsRequired();
+                entity.Property(e => e.IsAvailable).IsRequired();
+                entity.Property(e => e.Quantity).IsRequired();
+            });
+
+            // Дополнительные настройки модели (если необходимо)
+            // ... 
         }
     }
 

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarInventory.CarInventory.Api
 {
+    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
