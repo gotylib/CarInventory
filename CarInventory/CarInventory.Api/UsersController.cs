@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarInventory.CarInventory.Api
 {
-    [Authorize(Roles = "Admin")]
+
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
@@ -64,6 +64,13 @@ namespace CarInventory.CarInventory.Api
             return BadRequest(result.Errors);
         }
 
+
+        [Authorize]
+        [HttpGet("test")]
+        public IActionResult Test()
+        {
+            return Ok("JWT is valid!");
+        }
 
     }
 

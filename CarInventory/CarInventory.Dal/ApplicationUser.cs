@@ -5,6 +5,7 @@ namespace CarInventory.CarInventory.Dal
     public class ApplicationUser : IdentityUser
     {
       public string? Password { get; set; }
+      public string? RefreshToken { get; set; }
     }
 
 

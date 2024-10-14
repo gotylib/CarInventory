@@ -1,4 +1,5 @@
 using CarInventory;
+using CarInventory.CarInventory.Bll;
 using CarInventory.CarInventory.Dal;
 using CarInventory.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,18 +9,53 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
 
+static async Task InitializeRoles(WebApplication app)
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            await SeedRoles(roleManager);
+        }
+        catch (Exception ex)
+        {
+            // Логирование ошибок
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while seeding roles.");
+        }
+    }
+}
+
+static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
+{
+    string[] roleNames = { "Manager", "Admin", "User" };
+    foreach (var roleName in roleNames)
+    {
+        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
+        {
+            await roleManager.CreateAsync(new IdentityRole { Name = roleName });
+        }
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Настройка подключения к базе данных
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+
+// Настройка подключения к базе данных 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql("Host=localhost;Port=5432;Database=CarInventoryDB;Username=Gleb;Password=Az100Az."));
 
-// Настройка Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>() //  Указали ApplicationUser 
+// Настройка Identity 
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>() // Указали ApplicationUser  
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Настройка аутентификации JWT
+// Настройка аутентификации JWT 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -36,13 +72,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Настройка NLog
+// Настройка NLog 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
 builder.Services.AddControllers();
 
-// Настройка Swagger/OpenAPI
+// Настройка Swagger/OpenAPI 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -50,7 +86,7 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Please enter the token with Bearer prefix",
+        Description = "Введите токен с префиксом Bearer",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey
     });
@@ -65,14 +101,15 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            Array.Empty<string>()
+            new string[]{ }
         }
     });
 });
 
+
 var app = builder.Build();
 
-// Настройка middleware
+// Настройка middleware 
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -90,11 +127,17 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Настройка Swagger в режиме разработки
+// Настройка Swagger в режиме разработки 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.Run();
+// Инициализация ролей
+await InitializeRoles(app);
+
+// Запуск приложения
+await app.RunAsync();
+
+

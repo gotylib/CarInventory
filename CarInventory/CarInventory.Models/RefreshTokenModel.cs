@@ -2,6 +2,8 @@
 {
     public class RefreshTokenModel
     {
-        public string RefreshToken { get; set; }
+        public string? Token { get; set; }
+        public DateTime Expiration { get; set; } // Время истечения токена
     }
+
 }
