@@ -6,22 +6,22 @@ using Microsoft.IdentityModel.Tokens;
 using CarInventory.CarInventory.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using CarInventory.CarInventory.Dal;
 using CarInventory.CarInventory.Bll;
 using Microsoft.EntityFrameworkCore;
+using CarInventory.CarInventory.Dal.BaseObjects;
 
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly UserManager<User> _userManager;
 
     private readonly RoleManager<IdentityRole> _roleManager;
 
     private readonly ITokenService _tokenService;
 
-    public AuthController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ITokenService tokenService)
+    public AuthController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, ITokenService tokenService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
+        var user = new User { UserName = model.Username, Email = model.Email };
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (result.Succeeded)

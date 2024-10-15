@@ -1,5 +1,6 @@
 ﻿using CarInventory.CarInventory.Bll;
 using CarInventory.CarInventory.Dal;
+using CarInventory.CarInventory.Dal.BaseObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

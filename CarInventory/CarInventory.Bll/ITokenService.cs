@@ -1,11 +1,11 @@
-﻿using CarInventory.CarInventory.Dal;
+﻿using CarInventory.CarInventory.Dal.BaseObjects;
 using CarInventory.CarInventory.Models;
 
 namespace CarInventory.CarInventory.Bll
 {
     public interface ITokenService
     {
-        string GenerateAccessToken(ApplicationUser user);
+        string GenerateAccessToken(User user);
         RefreshTokenModel GenerateRefreshToken();
         bool ValidateRefreshToken(string refreshToken);
     }

@@ -1,4 +1,4 @@
-﻿namespace CarInventory.CarInventory.Dal
+﻿namespace CarInventory.CarInventory.Dal.BaseObjects
 {
     public class Car
     {

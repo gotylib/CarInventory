@@ -1,4 +1,4 @@
-﻿using CarInventory.CarInventory.Dal;
+﻿using CarInventory.CarInventory.Dal.BaseObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,14 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarInventory.CarInventory.Api
 {
-
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UserManager<User> _userManager;
 
-        public UsersController(UserManager<ApplicationUser> userManager)
+        public UsersController(UserManager<User> userManager)
         {
             _userManager = userManager;
         }
@@ -26,7 +26,7 @@ namespace CarInventory.CarInventory.Api
         }
 
         [HttpPost("CreateUser")]
-        public async Task<IActionResult> CreateUser([FromBody] ApplicationUser user)
+        public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             var result = await _userManager.CreateAsync(user, user.Password);
 
@@ -39,7 +39,7 @@ namespace CarInventory.CarInventory.Api
         }
 
         [HttpPost("UpdateUser")]
-        public async Task<IActionResult> UpdateUser([FromBody] ApplicationUser user)
+        public async Task<IActionResult> UpdateUser([FromBody] User user)
         {
             var result = await _userManager.UpdateAsync(user);
 
@@ -52,7 +52,7 @@ namespace CarInventory.CarInventory.Api
         }
 
         [HttpPost("DeleteeUser")]
-        public async Task<IActionResult> DeleteUser([FromBody] ApplicationUser user)
+        public async Task<IActionResult> DeleteUser([FromBody] User user)
         {
             var result = await _userManager.DeleteAsync(user);
 
@@ -65,7 +65,6 @@ namespace CarInventory.CarInventory.Api
         }
 
 
-        [Authorize]
         [HttpGet("test")]
         public IActionResult Test()
         {

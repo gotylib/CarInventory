@@ -1,4 +1,4 @@
-﻿using CarInventory.CarInventory.Dal;
+﻿using CarInventory.CarInventory.Dal.BaseObjects;
 using CarInventory.CarInventory.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,13 +10,12 @@ namespace CarInventory.CarInventory.Bll
     {
         private const int RefreshTokenExpirationDays = 1; 
 
-        public string GenerateAccessToken(ApplicationUser user)
+        public string GenerateAccessToken(User user)
         {
-            var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+            var claims = new List<Claim> {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email) ,
+                new Claim(ClaimTypes.Role, "Admin")};
 
             var key = AuthOptions.GetSymmetricSecurityKey();
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -26,7 +25,7 @@ namespace CarInventory.CarInventory.Bll
                 audience: AuthOptions.AUDIENCE,
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+                signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

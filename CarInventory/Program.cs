@@ -1,6 +1,7 @@
 using CarInventory;
 using CarInventory.CarInventory.Bll;
 using CarInventory.CarInventory.Dal;
+using CarInventory.CarInventory.Dal.BaseObjects;
 using CarInventory.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -48,10 +49,10 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Настройка подключения к базе данных 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql("Host=localhost;Port=5432;Database=CarInventoryDB;Username=Gleb;Password=Az100Az."));
+    options.UseNpgsql("Host=localhost;Port=5432;Database=CarInventoryDB;Username=postgres;Password=1234"));
 
 // Настройка Identity 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>() // Указали ApplicationUser  
+builder.Services.AddIdentity<User, IdentityRole>() // Указали ApplicationUser  
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
