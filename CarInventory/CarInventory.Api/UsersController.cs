@@ -1,4 +1,5 @@
-﻿using CarInventory.CarInventory.Dal.BaseObjects;
+﻿using CarInventory.CarInventory.Bll;
+using CarInventory.CarInventory.Dal.BaseObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,24 +12,24 @@ namespace CarInventory.CarInventory.Api
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
+        private readonly IUserService _userService;
 
-        public UsersController(UserManager<User> userManager)
+        public UsersController(IUserService userService)
         {
-            _userManager = userManager;
+            _userService = userService;
         }
 
         [HttpGet("GetUsers")]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _userManager.Users.ToListAsync();
+            var users = await _userService.GetUsersAsync();
             return Ok(users);
         }
 
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
-            var result = await _userManager.CreateAsync(user, user.Password);
+            var result = await _userService.CreateUserAsync(user);
 
             if (result.Succeeded)
             {
@@ -41,7 +42,7 @@ namespace CarInventory.CarInventory.Api
         [HttpPost("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] User user)
         {
-            var result = await _userManager.UpdateAsync(user);
+            var result = await _userService.UpdateUserAsync(user);
 
             if (result.Succeeded)
             {
@@ -51,26 +52,19 @@ namespace CarInventory.CarInventory.Api
             return BadRequest(result.Errors);
         }
 
-        [HttpPost("DeleteeUser")]
+        [HttpPost("DeleteUser")]
         public async Task<IActionResult> DeleteUser([FromBody] User user)
         {
-            var result = await _userManager.DeleteAsync(user);
+            var result = await _userService.DeleteUserAsync(user);
 
             if (result.Succeeded)
             {
-                return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
+                return Ok(user);
             }
 
             return BadRequest(result.Errors);
         }
-
-
-        [HttpGet("test")]
-        public IActionResult Test()
-        {
-            return Ok("JWT is valid!");
-        }
-
     }
+
 
 }

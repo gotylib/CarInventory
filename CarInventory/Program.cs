@@ -1,4 +1,5 @@
 using CarInventory;
+using CarInventory.CarInventory.Api;
 using CarInventory.CarInventory.Bll;
 using CarInventory.CarInventory.Dal;
 using CarInventory.CarInventory.Dal.BaseObjects;
@@ -10,46 +11,18 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
 
-static async Task InitializeRoles(WebApplication app)
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        try
-        {
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            await SeedRoles(roleManager);
-        }
-        catch (Exception ex)
-        {
-            // Логирование ошибок
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while seeding roles.");
-        }
-    }
-}
-
-static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
-{
-    string[] roleNames = { "Manager", "Admin", "User" };
-    foreach (var roleName in roleNames)
-    {
-        var roleExist = await roleManager.RoleExistsAsync(roleName);
-        if (!roleExist)
-        {
-            await roleManager.CreateAsync(new IdentityRole { Name = roleName });
-        }
-    }
-}
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 
-// Настройка подключения к базе данных 
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql("Host=localhost;Port=5432;Database=CarInventoryDB;Username=postgres;Password=1234"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Настройка Identity 
 builder.Services.AddIdentity<User, IdentityRole>() // Указали ApplicationUser  
@@ -138,7 +111,40 @@ if (app.Environment.IsDevelopment())
 // Инициализация ролей
 await InitializeRoles(app);
 
+app.UseMiddleware<ErrorHandlingMiddleware>();
+
 // Запуск приложения
 await app.RunAsync();
 
 
+static async Task InitializeRoles(WebApplication app)
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            await SeedRoles(roleManager);
+        }
+        catch (Exception ex)
+        {
+            // Логирование ошибок
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while seeding roles.");
+        }
+    }
+}
+
+static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
+{
+    string[] roleNames = { "Manager", "Admin", "User" };
+    foreach (var roleName in roleNames)
+    {
+        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
+        {
+            await roleManager.CreateAsync(new IdentityRole { Name = roleName });
+        }
+    }
+}

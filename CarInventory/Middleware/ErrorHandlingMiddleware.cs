@@ -1,19 +1,23 @@
-﻿using System.Net;
+﻿using Microsoft.AspNetCore.Http;
+using NLog;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace CarInventory.Middleware
 {
+
     public class ErrorHandlingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<ErrorHandlingMiddleware> _logger;
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
+        public ErrorHandlingMiddleware(RequestDelegate next)
         {
             _next = next;
-            _logger = logger;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             try
             {
@@ -21,11 +25,24 @@ namespace CarInventory.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred");
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                await context.Response.WriteAsync("An unexpected error occurred.");
+                await HandleExceptionAsync(context, ex);
             }
         }
+
+        private Task HandleExceptionAsync(HttpContext context, Exception exception)
+        {
+            Logger.Error(exception, "An unhandled exception has occurred: {Message}", exception.Message);
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+            return context.Response.WriteAsync(new
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = "Internal Server Error. Please try again later."
+            }.ToString());
+        }
     }
+
 
 }

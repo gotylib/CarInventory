@@ -30,8 +30,6 @@ namespace CarInventory.CarInventory.Dal
                 entity.Property(e => e.Quantity).IsRequired();
             });
 
-            // Дополнительные настройки модели (если необходимо)
-            // ... 
         }
     }
 

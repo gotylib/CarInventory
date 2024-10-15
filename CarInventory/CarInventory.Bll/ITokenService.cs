@@ -5,8 +5,8 @@ namespace CarInventory.CarInventory.Bll
 {
     public interface ITokenService
     {
+        
         string GenerateAccessToken(User user);
         RefreshTokenModel GenerateRefreshToken();
-        bool ValidateRefreshToken(string refreshToken);
     }
 }
